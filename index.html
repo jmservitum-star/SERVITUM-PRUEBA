@@ -211,33 +211,7 @@ function exportMonthlyPDF(){
  const funnel=Object.entries(stage).sort((a,b)=>b[1]-a[1]).map(([name,n])=>'<tr><td>'+esc(name)+'</td><td class="num">'+n+'</td></tr>').join('')||'<tr><td colspan="2">Sin actividad registrada</td></tr>';
  const table=rows.map(v=>'<tr><td>'+esc(registrationDate(v))+'</td><td>'+esc(v.company||'')+'</td><td>'+esc(v.profiles?.full_name||profile?.full_name||'')+'</td><td>'+esc(v.management_type||'Sin clasificar')+'</td><td>'+esc(v.commercial_stage||'Prospecto')+'</td><td>'+esc(v.followup_date||'—')+'</td></tr>').join('')||'<tr><td colspan="6">No se registraron gestiones durante este mes.</td></tr>';
  const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Servitum - Reporte mensual '+esc(month)+'</title><style>@page{size:A4 landscape;margin:14mm}*{box-sizing:border-box}body{font:12px Arial,sans-serif;color:#18334c;margin:0}header{border-bottom:3px solid #1b598b;padding-bottom:14px;margin-bottom:18px}h1{font-size:24px;margin:0;color:#123b63}h2{font-size:15px;color:#123b63;margin:22px 0 8px}p{margin:6px 0;color:#527087}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{padding:14px;border:1px solid #cce0ed;border-radius:8px;background:#f2f8fd}.metric strong{display:block;font-size:25px;color:#123b63}.metric span{font-size:11px}table{width:100%;border-collapse:collapse;font-size:10px}th{background:#123b63;color:#fff;text-align:left}th,td{padding:8px;border-bottom:1px solid #d9e6ef;vertical-align:top}tr{break-inside:avoid}.num{text-align:right}.foot{margin-top:20px;font-size:10px;color:#6a8294}.toolbar{padding:12px;background:#edf6ff;margin-bottom:18px;border-radius:8px}.toolbar button{background:#123b63;color:white;border:0;border-radius:6px;padding:10px 16px;cursor:pointer}@media print{.toolbar{display:none}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="toolbar"><b>Reporte listo.</b> Haz clic en «Guardar como PDF» y selecciona «Guardar como PDF» en el destino de impresión. <button onclick="window.print()">Guardar como PDF</button></div><header><h1>SERVITUM · Reporte comercial mensual</h1><p>'+esc(monthLabel)+' · '+esc(sellerLabel)+'</p><p>Fecha de emisión: '+esc(new Date().toLocaleDateString('es-DO'))+' · Fechas basadas en el registro de cada gestión</p></header><div class="metrics">'+summary+'</div><h2>Etapas comerciales de clientes gestionados</h2><table><thead><tr><th>Etapa</th><th class="num">Clientes</th></tr></thead><tbody>'+funnel+'</tbody></table><h2>Detalle de gestiones del mes ('+rows.length+')</h2><table><thead><tr><th>Fecha registro</th><th>Empresa</th><th>Vendedor</th><th>Gestión</th><th>Etapa</th><th>Próximo seguimiento</th></tr></thead><tbody>'+table+'</tbody></table><p class="foot">Informe generado desde SERVITUM PRUEBA. El conteo de clientes únicos corresponde a empresas gestionadas por vendedor durante el período. No representa necesariamente clientes nuevos.</p>
-<script>
-(function(){
- function setupModernDashboard(){
-  const dash=document.getElementById('dashboard');if(!dash||dash.dataset.modernReady)return;
-  dash.dataset.modernReady='1';document.body.classList.add('modern-crm');
-  const groups=[...dash.querySelectorAll(':scope > .dashboard-group')],originalKpis=dash.querySelector('.kpis');if(!originalKpis)return;
-  const hero=document.createElement('div');hero.className='modern-hero';hero.innerHTML='<div><h2>Dashboard</h2><p>Resumen de la actividad comercial · Servitum</p></div><span style="font-size:12px;color:#63819a">Panel ejecutivo</span>';
-  const kpis=document.createElement('div');kpis.className='modern-top-kpis';
-  const items=[...originalKpis.querySelectorAll('.kpi')];[5,0,2,7,4].forEach(i=>{if(items[i])kpis.appendChild(items[i])});
-  const main=document.createElement('div');main.className='modern-main-grid';
-  const bottom=document.createElement('div');bottom.className='modern-bottom-grid';
-  function moveChart(id,target){const el=document.getElementById(id),chart=el?.closest('.chart');if(chart){chart.classList.remove('full');target.appendChild(chart)}}
-  moveChart('gWeek',main);moveChart('gMonth',main);
-  moveChart('gFunnel',bottom);moveChart('agendaToday',bottom);moveChart('overdueList',bottom);
-  const foot=document.createElement('div');foot.className='modern-footer-grid';
-  const quick=document.createElement('div');quick.className='modern-quick';quick.innerHTML='<h3>Acciones rápidas</h3><button type="button" class="primary" data-go="form">+ Agregar visita</button><button type="button" class="secondary" data-go="history">Ver clientes</button><button type="button" class="secondary" data-go="agenda">Mi agenda</button><button type="button" class="secondary" data-go="dashboard" data-report="1">Reporte PDF</button>';
-  quick.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.report){document.getElementById('reportMonth')?.focus();document.querySelector('.modern-report')?.scrollIntoView({behavior:'smooth',block:'center'})}else document.querySelector('#app>.nav [data-tab="'+btn.dataset.go+'"]')?.click()}));
-  foot.appendChild(quick);
-  const report=document.getElementById('monthlyReportsSection');if(report){report.classList.add('modern-report');const h=document.createElement('h3');h.textContent='Reporte mensual en PDF';report.prepend(h);foot.appendChild(report)}
-  const extra=document.createElement('details');extra.className='modern-extra';extra.innerHTML='<summary>Ver indicadores y análisis adicionales</summary>';
-  groups.forEach(g=>{if(g!==report)extra.appendChild(g)});
-  dash.prepend(extra);dash.prepend(foot);dash.prepend(bottom);dash.prepend(main);dash.prepend(kpis);dash.prepend(hero);
-  const nav=document.querySelector('#app>.nav');if(nav){const reportBtn=document.createElement('button');reportBtn.type='button';reportBtn.textContent='Reportes PDF';reportBtn.addEventListener('click',()=>{document.querySelector('#app>.nav [data-tab="dashboard"]')?.click();document.querySelector('.modern-report')?.scrollIntoView({behavior:'smooth',block:'center'})});nav.insertBefore(reportBtn,nav.querySelector('#logout'))}
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupModernDashboard);else setupModernDashboard();
-})();
-</script>
+
 </body></html>';
  pop.document.open();pop.document.write(html);pop.document.close();pop.focus();
 }
@@ -316,4 +290,31 @@ init();
 </script>
 <script src="client-dedupe-fix.js?v=20261022-profile-no-add-9"></script>
 <!-- pages-deploy-trigger: 2026-10-05-rnc -->
+<script>
+(function(){
+ function setupModernDashboard(){
+  const dash=document.getElementById('dashboard');if(!dash||dash.dataset.modernReady)return;
+  dash.dataset.modernReady='1';document.body.classList.add('modern-crm');
+  const groups=[...dash.querySelectorAll(':scope > .dashboard-group')],originalKpis=dash.querySelector('.kpis');if(!originalKpis)return;
+  const hero=document.createElement('div');hero.className='modern-hero';hero.innerHTML='<div><h2>Dashboard</h2><p>Resumen de la actividad comercial · Servitum</p></div><span style="font-size:12px;color:#63819a">Panel ejecutivo</span>';
+  const kpis=document.createElement('div');kpis.className='modern-top-kpis';
+  const items=[...originalKpis.querySelectorAll('.kpi')];[5,0,2,7,4].forEach(i=>{if(items[i])kpis.appendChild(items[i])});
+  const main=document.createElement('div');main.className='modern-main-grid';
+  const bottom=document.createElement('div');bottom.className='modern-bottom-grid';
+  function moveChart(id,target){const el=document.getElementById(id),chart=el?.closest('.chart');if(chart){chart.classList.remove('full');target.appendChild(chart)}}
+  moveChart('gWeek',main);moveChart('gMonth',main);
+  moveChart('gFunnel',bottom);moveChart('agendaToday',bottom);moveChart('overdueList',bottom);
+  const foot=document.createElement('div');foot.className='modern-footer-grid';
+  const quick=document.createElement('div');quick.className='modern-quick';quick.innerHTML='<h3>Acciones rápidas</h3><button type="button" class="primary" data-go="form">+ Agregar visita</button><button type="button" class="secondary" data-go="history">Ver clientes</button><button type="button" class="secondary" data-go="agenda">Mi agenda</button><button type="button" class="secondary" data-go="dashboard" data-report="1">Reporte PDF</button>';
+  quick.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.report){document.getElementById('reportMonth')?.focus();document.querySelector('.modern-report')?.scrollIntoView({behavior:'smooth',block:'center'})}else document.querySelector('#app>.nav [data-tab="'+btn.dataset.go+'"]')?.click()}));
+  foot.appendChild(quick);
+  const report=document.getElementById('monthlyReportsSection');if(report){report.classList.add('modern-report');const h=document.createElement('h3');h.textContent='Reporte mensual en PDF';report.prepend(h);foot.appendChild(report)}
+  const extra=document.createElement('details');extra.className='modern-extra';extra.innerHTML='<summary>Ver indicadores y análisis adicionales</summary>';
+  groups.forEach(g=>{if(g!==report)extra.appendChild(g)});
+  dash.prepend(extra);dash.prepend(foot);dash.prepend(bottom);dash.prepend(main);dash.prepend(kpis);dash.prepend(hero);
+  const nav=document.querySelector('#app>.nav');if(nav){const reportBtn=document.createElement('button');reportBtn.type='button';reportBtn.textContent='Reportes PDF';reportBtn.addEventListener('click',()=>{document.querySelector('#app>.nav [data-tab="dashboard"]')?.click();document.querySelector('.modern-report')?.scrollIntoView({behavior:'smooth',block:'center'})});nav.insertBefore(reportBtn,nav.querySelector('#logout'))}
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupModernDashboard);else setupModernDashboard();
+})();
+</script>
 </body></html>
