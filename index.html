@@ -465,7 +465,7 @@ function buildServitumDashboard(){
  document.body.classList.add('sv-modern');
  }catch(err){console.error('Error en diseño de dashboard',err)}
 }
-function applyLayout(){buildServitumDashboard();const d=document.getElementById('dashboard');if(d?.dataset.svModern==='yes'){const nav=document.querySelector('#app>.nav');if(nav&&!nav.querySelector('.sv-brand')){const b=document.createElement('div');b.className='sv-brand';b.innerHTML='<b>Servitum</b>';const originalLogo=document.querySelector('header .logo');if(originalLogo){const logo=originalLogo.cloneNode(true);logo.className='sv-brand-logo';b.replaceChildren(logo)}nav.prepend(b)}const title=d.querySelector('.sv-title');if(title)title.dataset.layout='20261022-v4'}}}
+function applyLayout(){buildServitumDashboard();const d=document.getElementById('dashboard');if(d?.dataset.svModern==='yes'){const nav=document.querySelector('#app>.nav');if(nav&&!nav.querySelector('.sv-brand')){const b=document.createElement('div');b.className='sv-brand';b.innerHTML='<b>Servitum</b>';const originalLogo=document.querySelector('header .logo');if(originalLogo){const logo=originalLogo.cloneNode(true);logo.className='sv-brand-logo';b.replaceChildren(logo)}nav.prepend(b)}const title=d.querySelector('.sv-title');if(title)title.dataset.layout='20261022-v6'}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applyLayout);else applyLayout();
 window.addEventListener('load',applyLayout);
 })();
