@@ -154,7 +154,7 @@ function updateMonthlyReportControls(){
 }
 function exportMonthlyPDF(){
  const month=$('reportMonth')?.value,seller=$('reportSeller')?.value,admin=profile?.role==='admin';
- if(!/^\\d{4}-\\d{2}$/.test(month||'')){alert('Selecciona un mes válido.');return}
+ if(!/^\d{4}-\d{2}$/.test(month||'')){alert('Selecciona un mes válido.');return}
  const pop=window.open('','_blank');if(!pop){alert('Permite las ventanas emergentes para generar el reporte.');return}
  const rows=visits.filter(v=>registrationDate(v).slice(0,7)===month&&(admin?(seller==='all'||v.user_id===seller):v.user_id===me?.id)).sort((a,b)=>registrationDate(a).localeCompare(registrationDate(b)));
  const unique=new Map();rows.forEach(v=>{const k=(v.user_id||'')+'|'+String(v.company||'').trim().toLowerCase();if(k.trim())unique.set(k,v)});
