@@ -166,7 +166,7 @@ renderWorkAgenda = function(){
       '</div>'+
       '<div class="perf-section"><h3>Información del cliente</h3><p><b>Dirección:</b> '+esc(latest.address||'No registrada')+'<br><b>Contacto:</b> '+contact+'<br><b>Primera visita:</b> '+esc(first.visit_date||'—')+'<br><b>Último próximo paso:</b> '+esc(latest.next_step||'No registrado')+'</p></div>'+
       '<div class="perf-section"><h3>Historial de visitas</h3><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Vendedor</th><th>Motivo</th><th>Resultado</th><th>Etapa</th><th>Seguimiento</th><th>Acción</th></tr></thead><tbody>'+history+'</tbody></table></div></div>'+
-      '<div class="perf-section"><button class="primary" onclick="closeClientProfile();repeatVisit(\''+latest.id+'\')">Registrar nueva visita</button></div>';
+      '';
     document.getElementById('clientProfileModal').style.display='block';
   };
   ensureClientModal();
