@@ -679,7 +679,27 @@ function buildServitumDashboard(){
  d.querySelectorAll('.sv-see-all').forEach(b=>b.addEventListener('click',()=>nav?.querySelector('[data-tab="'+b.dataset.tabGo+'"]')?.click()));d.dataset.svModern='yes';document.body.classList.add('sv-modern');
  }catch(err){console.error('Error en diseño de dashboard',err)}
 }
-function applyLayout(){buildServitumDashboard();const d=document.getElementById('dashboard');if(d?.dataset.svModern==='yes'){const nav=document.querySelector('#app>.nav');if(nav&&!nav.querySelector('.sv-brand')){const b=document.createElement('div');b.className='sv-brand';b.innerHTML='<b>Servitum</b>';const originalLogo=document.querySelector('header img, .topbar img, #app header img');if(originalLogo){const logo=originalLogo.cloneNode(true);logo.className='sv-brand-logo';b.replaceChildren(logo)}nav.prepend(b)}const title=d.querySelector('.sv-title');if(title)title.dataset.layout='20261022-v6'}}
+function repairSidebarNavigation(){
+ const nav=document.querySelector('#app>.nav');if(!nav||nav.dataset.svNavRepaired==='yes')return;
+ nav.dataset.svNavRepaired='yes';
+ nav.addEventListener('click',function(event){
+   const button=event.target.closest('button');
+   if(!button||!nav.contains(button))return;
+   if(button.id==='logout'){
+     event.preventDefault();event.stopImmediatePropagation();
+     Promise.resolve(sb.auth.signOut()).then(({error}={})=>{if(error){alert('No se pudo cerrar sesión: '+error.message);return}location.reload()}).catch(err=>alert('No se pudo cerrar sesión: '+err.message));
+     return;
+   }
+   const tab=button.dataset.tab;if(!tab)return;
+   event.preventDefault();event.stopImmediatePropagation();
+   if(tab==='users'&&profile?.role!=='admin')return;
+   const panel=document.getElementById(tab);if(!panel){console.error('Sección no encontrada:',tab);return}
+   nav.querySelectorAll('button[data-tab]').forEach(b=>b.classList.toggle('active',b===button));
+   document.querySelectorAll('#app>.panel').forEach(p=>p.classList.toggle('active',p===panel));
+   if(tab==='agenda'){try{renderWorkAgenda()}catch(err){console.error('Error al abrir seguimientos:',err)}}
+ },true);
+}
+function applyLayout(){buildServitumDashboard();repairSidebarNavigation();const d=document.getElementById('dashboard');if(d?.dataset.svModern==='yes'){const nav=document.querySelector('#app>.nav');if(nav&&!nav.querySelector('.sv-brand')){const b=document.createElement('div');b.className='sv-brand';b.innerHTML='<b>Servitum</b>';const originalLogo=document.querySelector('header img, .topbar img, #app header img');if(originalLogo){const logo=originalLogo.cloneNode(true);logo.className='sv-brand-logo';b.replaceChildren(logo)}nav.prepend(b)}const title=d.querySelector('.sv-title');if(title)title.dataset.layout='20261022-v6'}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applyLayout);else applyLayout();
 window.addEventListener('load',()=>{applyLayout();window.svRefreshRecent?.()});
 })();
