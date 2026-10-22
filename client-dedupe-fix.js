@@ -27,16 +27,23 @@ render = function(){
 };
 
 renderFunnel = function(){
+  const host=$('gFunnel');if(!host)return;
   const stages=['Prospecto','Contactado','Cotización','Seguimiento','Negociación','Venta cerrada','Cliente activo'],latest={};
-  visits.forEach(v=>{
-    const k=clientKey(v),t=v.updated_at?new Date(v.updated_at):localDate(v.visit_date);
+  visits.filter(v=>profile?.role==='admin'||v.user_id===me?.id).forEach(v=>{
+    const k=clientKey(v),t=new Date(v.updated_at||v.created_at||v.visit_date);
     if(k&&(!latest[k]||t>latest[k].t))latest[k]={v,t};
   });
   funnelLatest=latest;
   const clients=Object.values(latest),counts={};
-  stages.forEach(s=>counts[s]=0);
-  clients.forEach(x=>counts[x.v.commercial_stage||'Prospecto']=(counts[x.v.commercial_stage||'Prospecto']||0)+1);
-  $('gFunnel').innerHTML=stages.map(s=>'<div class="funnel-step" onclick="openFunnelStage(\''+s.replace(/'/g,"\\'")+'\')"><b>'+counts[s]+'</b><span>'+esc(s)+'</span></div>').join('');
+  stages.forEach(stage=>counts[stage]=0);
+  clients.forEach(x=>{const stage=x.v.commercial_stage||'Prospecto';counts[stage]=(counts[stage]||0)+1});
+  const colors=['#4099f5','#78c5fa','#ffd451','#ff9b54','#fa7094','#aa83f6','#57cb8a'];
+  const widths=[100,88,76,64,53,44,58];
+  host.innerHTML=stages.map((stage,i)=>{
+    const n=counts[stage]||0,pct=clients.length?Math.round(n*100/clients.length):0;
+    return '<button type="button" class="sv-funnel-line" data-stage="'+esc(stage)+'" aria-label="Ver clientes en '+esc(stage)+'"><span class="sv-funnel-name">'+esc(stage)+'</span><span class="sv-funnel-shape" style="width:'+widths[i]+'%;background:'+colors[i]+'"></span><span class="sv-funnel-value"><b>'+n+'</b> <small>('+pct+'%)</small></span></button>';
+  }).join('');
+  host.querySelectorAll('[data-stage]').forEach(btn=>btn.addEventListener('click',()=>window.openFunnelStage(btn.dataset.stage)));
   const cut=new Date();cut.setDate(cut.getDate()-7);
   const open=new Set(['Prospecto','Contactado','Cotización','Seguimiento','Negociación']);
   const stalled=clients.filter(x=>open.has(x.v.commercial_stage||'Prospecto')&&x.t<cut).sort((a,b)=>a.t-b.t);
