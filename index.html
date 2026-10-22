@@ -335,17 +335,6 @@ body.sv-modern #dashboard .sv-visual-chart{box-sizing:border-box!important}
 body.sv-modern #dashboard .sv-plot{box-sizing:border-box!important}
 @media(max-width:1050px){body.sv-modern #dashboard .sv-lists{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.sv-modern #dashboard .sv-lists>.sv-recent{grid-column:span 2}}
 @media(max-width:700px){body.sv-modern #dashboard .sv-lists{grid-template-columns:1fr!important}body.sv-modern #dashboard .sv-lists>.sv-recent{grid-column:auto}body.sv-modern #dashboard .sv-legacy-charts{grid-template-columns:1fr}}
-</style><style id="sv-chart-fix-20261022">
-body.sv-modern #dashboard .sv-plot{height:205px!important;min-height:205px!important;overflow:hidden!important;padding:12px 8px 0!important}
-body.sv-modern #dashboard .sv-chart-readable{height:100%!important;width:100%!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(var(--chart-columns),minmax(0,1fr))!important;gap:0!important;align-items:stretch!important;padding:0!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-chart-col{height:100%!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-end!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-chart-bars{height:calc(100% - 26px)!important;width:100%!important;min-height:0!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;gap:5px!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-bar-slot{height:100%!important;width:34%!important;max-width:42px!important;min-width:0!important;position:relative!important;display:flex!important;align-items:flex-end!important;justify-content:center!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-chart-bar{height:var(--bar-height)!important;width:100%!important;max-width:none!important;max-height:calc(100% - 21px)!important;min-height:0!important;border-radius:4px 4px 0 0!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-bar-value{position:absolute!important;bottom:calc(var(--bar-height) + 3px)!important;left:50%!important;transform:translateX(-50%)!important;display:block!important;font-size:11px!important;font-weight:700!important;line-height:16px!important;color:#123b63!important;white-space:nowrap!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-bar-value-alt{color:#6488ae!important}
-body.sv-modern #dashboard .sv-chart-readable .sv-chart-label{height:26px!important;line-height:26px!important;width:100%!important;margin:0!important;text-align:center!important;font-size:12px!important}
-@media(max-width:600px){body.sv-modern #dashboard .sv-chart-readable .sv-chart-bars{gap:2px!important}body.sv-modern #dashboard .sv-chart-readable .sv-bar-value{font-size:10px!important}}
 </style><style id="sv-activity-svg-v2">
 body.sv-modern #dashboard .sv-plot{display:block!important;overflow:hidden!important;padding:8px 4px 0!important;height:210px!important;min-height:210px!important}
 body.sv-modern #dashboard .sv-activity-svg{display:block;width:100%;height:100%;overflow:visible;font-family:Arial,sans-serif}
@@ -406,7 +395,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(b.dataset.t
 async function load(){const {data,error}=await sb.from('visits').select('*,profiles:profiles!visits_user_id_fkey(full_name),creator:profiles!visits_created_by_fkey(full_name),updater:profiles!visits_updated_by_fkey(full_name)').order('visit_date',{ascending:false});if(error){alert(error.message);return}visits=data||[];const gr=await sb.from('visit_goals').select('*,profiles(full_name)');goals=gr.data||[];const gh=await sb.from('visit_goal_history').select('*,profiles(full_name)').order('week_start',{ascending:false}).limit(100);goalHistory=gh.data||[];try{render()}finally{try{renderExecutiveDashboard()}catch(chartError){console.error('Error al actualizar actividad comercial:',chartError)}}if(profile.role==='admin')loadUsers();if($('agenda')?.classList.contains('active'))renderWorkAgenda()}
 function counts(field){const o={};visits.forEach(v=>{const k=(field==='seller'?(v.profiles?.full_name||'Sin vendedor'):(v[field]||'Sin especificar'));o[k]=(o[k]||0)+1});return o}
 function bars(id,obj,keepOrder=false){const a=Object.entries(obj);if(!keepOrder)a.sort((a,b)=>b[1]-a[1]);const e=$(id);if(!a.length){e.innerHTML='<p class="muted">Sin datos todavía.</p>';return}const mx=Math.max(1,...a.map(x=>x[1]));e.innerHTML=a.map(([k,v])=>'<div class="bar"><span>'+esc(k)+'</span><div class="track"><div class="fill" style="width:'+(v/mx*100)+'%"></div></div><b>'+v+'</b></div>').join('')}
-function registrationDate(v){return v.created_at?new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santo_Domingo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(v.created_at)):v.visit_date}
+function registrationDate(v){if(!v.created_at)return String(v.visit_date||'').slice(0,10);const d=new Date(v.created_at);if(Number.isNaN(d.getTime()))return String(v.visit_date||'').slice(0,10);const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Santo_Domingo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);const get=t=>parts.find(p=>p.type===t)?.value||'';return get('year')+'-'+get('month')+'-'+get('day')}
 function renderMonthlyChart(){
  const selector=$('monthlyChartSeller');if(!selector)return;
  const previous=selector.value;
@@ -494,7 +483,7 @@ function renderExecutiveDashboard(){
    const plotWidth=width-left-right,plotHeight=height-top-bottom,groupWidth=plotWidth/items.length;
    const ceiling=Math.max(1,Math.ceil(max/4)*4);
    const scale=n=>top+plotHeight-(n/ceiling)*plotHeight;
-   let svg='<svg class="sv-activity-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+(kind==='weekly'?'Gestiones comerciales por día de esta semana y la anterior':'Gestiones y clientes atendidos por mes')+'" preserveAspectRatio="none">';
+   let svg='<svg class="sv-activity-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+(kind==='weekly'?'Gestiones comerciales por día de esta semana y la anterior':'Gestiones y clientes atendidos por mes')+'" preserveAspectRatio="xMidYMid meet">';
    for(let tick=0;tick<=4;tick++){const value=Math.round(ceiling*tick/4),y=scale(value);svg+='<line x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'" stroke="#e1eaf3" stroke-width="1"/><text x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#627a95">'+value+'</text>'}
    items.forEach((item,i)=>{
      const cx=left+groupWidth*(i+.5),barWidth=Math.min(29,groupWidth*.26),gap=5;
