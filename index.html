@@ -432,7 +432,7 @@ function buildServitumDashboard(){
  const d=document.getElementById('dashboard');
  if(!d||d.dataset.svModern)return;
  const k=d.querySelector('.kpis'),weekly=d.querySelector('#gWeek')?.closest('.chart'),monthly=d.querySelector('#gMonth')?.closest('.chart'),funnel=d.querySelector('#gFunnel')?.closest('.chart'),today=d.querySelector('#agendaToday')?.closest('.chart'),late=d.querySelector('#overdueList')?.closest('.chart');
- if(!k||!weekly||!monthly||!funnel||!today||!late)return;
+ if(!k||!weekly||!monthly||!funnel||!today||!late){console.warn('Dashboard: faltan contenedores');return;}
  d.dataset.svModern='yes';
  const make=(tag,cls)=>{const e=document.createElement(tag);e.className=cls;return e};
  const title=make('div','sv-title');title.innerHTML='<div><h2>Dashboard</h2><p>Resumen general de tu actividad comercial</p></div><div class="sv-top-controls"><label>Mes <input type="month" id="svTopMonth" aria-label="Mes del dashboard"></label><div class="sv-user-chip"><b>Administrador</b><span>Servitum · Panel comercial</span></div></div>';
@@ -442,11 +442,18 @@ function buildServitumDashboard(){
  const inactive=document.getElementById('inactiveClientsPanel');
  if(inactive){inactive.classList.add('sv-inactive');today.append(inactive)}
  const recent=make('div','chart sv-recent');recent.innerHTML='<h3>◷ &nbsp; Actividad reciente</h3><p class="sv-card-sub">Últimas gestiones registradas</p><div id="svRecentItems" class="follow-list"></div>';lists.append(recent);
- function updateRecent(){const inactiveNow=document.getElementById('inactiveClientsPanel');if(inactiveNow&&inactiveNow.parentElement!==lists){inactiveNow.classList.add('sv-inactive');today.append(inactiveNow)}const host=document.getElementById('svRecentItems');if(!host)return;const rows=(typeof visits!=='undefined'?visits:[]).filter(v=>profile?.role==='admin'||v.user_id===me?.id).slice().sort((a,b)=>String(b.created_at||b.visit_date).localeCompare(String(a.created_at||a.visit_date))).slice(0,5);host.innerHTML=rows.map(v=>'<div class="sv-recent-row"><b>'+esc(v.company||'Cliente')+'</b><span>'+esc(v.management_type||'Gestión')+' · '+esc((v.created_at||v.visit_date||'').slice(0,10))+'</span></div>').join('')||'<p class="muted">Sin actividad registrada</p>'}
+ function updateRecent(){
+  const inactiveNow=document.getElementById('inactiveClientsPanel');
+  if(inactiveNow&&inactiveNow.parentElement!==today){inactiveNow.classList.add('sv-inactive');today.append(inactiveNow)}
+  const host=document.getElementById('svRecentItems');if(!host)return;
+  const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const rows=(Array.isArray(visits)?visits:[]).filter(v=>profile?.role==='admin'||v.user_id===me?.id).slice().sort((x,y)=>String(y.created_at||y.visit_date||'').localeCompare(String(x.created_at||x.visit_date||''))).slice(0,5);
+  host.innerHTML=rows.map(v=>'<div class="sv-recent-row"><b>'+safe(v.company||v.company_name||'Cliente')+'</b><span>'+safe(v.management_type||v.management||'Gestión')+' · '+safe(String(v.created_at||v.visit_date||'').slice(0,10))+'</span></div>').join('')||'<p class="muted">Sin actividad registrada</p>';
+ }
  const oldRender=typeof render==='function'?render:null;
- if(oldRender){render=function(){const result=oldRender.apply(this,arguments);updateRecent();return result}}
- updateRecent();
- window.addEventListener('load',()=>{updateRecent()});
+ if(oldRender){render=function(){const result=oldRender.apply(this,arguments);try{updateRecent()}catch(e){console.warn('Actividad reciente',e)}return result}}
+ try{updateRecent()}catch(e){console.warn('Actividad reciente',e)}
+ window.addEventListener('load',()=>{try{updateRecent()}catch(e){console.warn(e)}});
  const footer=make('div','sv-footer'),actions=make('div','sv-actions');
  actions.innerHTML='<h3>ϟ &nbsp; Acciones rápidas</h3><div class="sv-action-grid"><button class="primary" type="button" data-tab-go="form"><span>＋</span>Agregar visita</button><button class="secondary" type="button" data-tab-go="history"><span>♧</span>Ver clientes</button><button class="secondary" type="button" data-tab-go="agenda"><span>◷</span>Mi agenda</button><button class="secondary" type="button" data-pdf="1"><span>▥</span>Generar reporte</button></div>';
  actions.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.pdf){document.querySelector('.sv-report')?.scrollIntoView({behavior:'smooth',block:'center'});return}document.querySelector('#app>.nav [data-tab="'+b.dataset.tabGo+'"]')?.click()}));
