@@ -178,15 +178,9 @@ renderWorkAgenda = function(){
     return html.replace('<div class="task-actions">','<div class="task-actions"><button class="secondary" onclick="openClientProfile(\''+v.id+'\')">Ficha cliente</button>');
   };
 
-  // Añade acceso a la ficha desde cada cliente del embudo.
-  const oldOpenFunnelStage=window.openFunnelStage;
-  window.openFunnelStage=function(stage){
-    oldOpenFunnelStage(stage);
-    const body=document.getElementById('funnelModalBody');if(!body)return;
-    const clients=Object.values(funnelLatest).filter(x=>(x.v.commercial_stage||'Prospecto')===stage).sort((a,b)=>String(a.v.company).localeCompare(String(b.v.company)));
-    const buttons=body.querySelectorAll('.client-stage-row');
-    buttons.forEach((row,i)=>{if(clients[i]&&!row.querySelector('.client-profile-btn')){const box=row.lastElementChild;if(box){const b=document.createElement('button');b.className='secondary client-profile-btn';box.classList.add('funnel-row-actions');b.textContent='Ficha';b.onclick=()=>{closeFunnelModal();openClientProfile(clients[i].v.id)};box.appendChild(b);box.style.setProperty('display','flex','important');box.style.setProperty('flex-direction','row','important');box.style.setProperty('flex-wrap','nowrap','important');box.style.setProperty('align-items','center','important');box.style.setProperty('justify-content','flex-end','important');box.style.setProperty('gap','14px','important');box.style.setProperty('width','190px','important');box.style.setProperty('min-width','190px','important');Array.from(box.querySelectorAll('button')).forEach(btn=>{btn.style.setProperty('display','inline-flex','important');btn.style.setProperty('width','82px','important');btn.style.setProperty('min-width','82px','important');btn.style.setProperty('flex','0 0 82px','important');btn.style.setProperty('height','48px','important');btn.style.setProperty('margin','0','important');btn.style.setProperty('align-items','center','important');btn.style.setProperty('justify-content','center','important')})}}});
-  };
+  // Los botones Abrir y Ficha se crean juntos en index.html.
+  // No se vuelven a insertar ni se modifican sus estilos aquí.
+
 })();
 
 
@@ -312,5 +306,3 @@ renderWorkAgenda = function(){
 
 
 
-// Botones de acción alineados en la misma columna, con separación uniforme.
-(function(){const style=document.createElement('style');style.textContent='.client-stage-row{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 190px;align-items:center}.client-stage-row .funnel-row-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}.client-stage-row .funnel-row-actions button{margin:0!important;min-width:82px;text-align:center;white-space:nowrap}@media(max-width:700px){.client-stage-row{grid-template-columns:1fr}.client-stage-row .funnel-row-actions{justify-content:flex-start}}';document.head.appendChild(style)})();
