@@ -185,7 +185,7 @@ renderWorkAgenda = function(){
     const body=document.getElementById('funnelModalBody');if(!body)return;
     const clients=Object.values(funnelLatest).filter(x=>(x.v.commercial_stage||'Prospecto')===stage).sort((a,b)=>String(a.v.company).localeCompare(String(b.v.company)));
     const buttons=body.querySelectorAll('.client-stage-row');
-    buttons.forEach((row,i)=>{if(clients[i]&&!row.querySelector('.client-profile-btn')){const box=row.lastElementChild;if(box){const b=document.createElement('button');b.className='secondary client-profile-btn';b.style.marginLeft='6px';b.textContent='Ficha';b.onclick=()=>{closeFunnelModal();openClientProfile(clients[i].v.id)};box.appendChild(b)}}});
+    buttons.forEach((row,i)=>{if(clients[i]&&!row.querySelector('.client-profile-btn')){const box=row.lastElementChild;if(box){const b=document.createElement('button');b.className='secondary client-profile-btn';box.classList.add('funnel-row-actions');b.textContent='Ficha';b.onclick=()=>{closeFunnelModal();openClientProfile(clients[i].v.id)};box.appendChild(b)}}});
   };
 })();
 
@@ -311,3 +311,6 @@ renderWorkAgenda = function(){
 })();
 
 
+
+// Botones de acción alineados en la misma columna, con separación uniforme.
+(function(){const style=document.createElement('style');style.textContent='.client-stage-row{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 190px;align-items:center}.client-stage-row .funnel-row-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}.client-stage-row .funnel-row-actions button{margin:0!important;min-width:82px;text-align:center;white-space:nowrap}@media(max-width:700px){.client-stage-row{grid-template-columns:1fr}.client-stage-row .funnel-row-actions{justify-content:flex-start}}';document.head.appendChild(style)})();
