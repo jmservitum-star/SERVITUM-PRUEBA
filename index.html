@@ -342,10 +342,11 @@ function buildServitumDashboard(){
  const inactive=document.getElementById('inactiveClientsPanel');
  if(inactive){inactive.classList.add('sv-inactive');lists.append(inactive)}
  const recent=make('div','chart sv-recent');recent.innerHTML='<h3>Actividad reciente</h3><div id="svRecentItems" class="follow-list"></div>';lists.append(recent);
- function updateRecent(){const host=document.getElementById('svRecentItems');if(!host)return;const rows=(typeof visits!=='undefined'?visits:[]).filter(v=>profile?.role==='admin'||v.user_id===me?.id).slice().sort((a,b)=>String(b.created_at||b.visit_date).localeCompare(String(a.created_at||a.visit_date))).slice(0,5);host.innerHTML=rows.map(v=>'<div class="sv-recent-row"><b>'+esc(v.company||'Cliente')+'</b><span>'+esc(v.management_type||'Gestión')+' · '+esc((v.created_at||v.visit_date||'').slice(0,10))+'</span></div>').join('')||'<p class="muted">Sin actividad registrada</p>'}
+ function updateRecent(){const inactiveNow=document.getElementById('inactiveClientsPanel');if(inactiveNow&&inactiveNow.parentElement!==lists){inactiveNow.classList.add('sv-inactive');lists.insertBefore(inactiveNow,recent)}const host=document.getElementById('svRecentItems');if(!host)return;const rows=(typeof visits!=='undefined'?visits:[]).filter(v=>profile?.role==='admin'||v.user_id===me?.id).slice().sort((a,b)=>String(b.created_at||b.visit_date).localeCompare(String(a.created_at||a.visit_date))).slice(0,5);host.innerHTML=rows.map(v=>'<div class="sv-recent-row"><b>'+esc(v.company||'Cliente')+'</b><span>'+esc(v.management_type||'Gestión')+' · '+esc((v.created_at||v.visit_date||'').slice(0,10))+'</span></div>').join('')||'<p class="muted">Sin actividad registrada</p>'}
  const oldRender=typeof render==='function'?render:null;
  if(oldRender){render=function(){const result=oldRender.apply(this,arguments);updateRecent();return result}}
  updateRecent();
+ window.addEventListener('load',()=>{updateRecent()});
  const footer=make('div','sv-footer'),actions=make('div','sv-actions');
  actions.innerHTML='<h3>Acciones rápidas</h3><button class="primary" type="button" data-tab-go="form">+ Agregar visita</button><button class="secondary" type="button" data-tab-go="history">Ver clientes</button><button class="secondary" type="button" data-tab-go="agenda">Mi agenda</button>';
  actions.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>document.querySelector('#app>.nav [data-tab="'+b.dataset.tabGo+'"]')?.click()));
