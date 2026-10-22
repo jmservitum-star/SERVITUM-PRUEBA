@@ -56,6 +56,17 @@ body.seller-view #dashboard .dashboard-group:nth-of-type(2) .chart:has(#gVend),b
 <section id="users" class="panel"><div class="box"><h2>Usuarios / Vendedores</h2><p class="muted">Solo el administrador puede ver esta sección. Aquí puede crear vendedores y controlar sus metas.</p><div class="box" style="background:#f7fbfe;border:1px solid #dbe9f2"><h3 style="margin-top:0">Crear vendedor</h3><form id="sellerCreateForm"><div class="grid"><div><label>Nombre completo</label><input id="sellerFullName" required minlength="3" autocomplete="name"></div><div><label>Correo electrónico</label><input id="sellerEmail" type="email" required autocomplete="email"></div><div><label>Contraseña temporal</label><input id="sellerPassword" type="password" required minlength="10" autocomplete="new-password"></div><div style="display:flex;align-items:end"><button id="sellerCreateBtn" class="primary" type="submit">Crear vendedor</button></div></div><p id="sellerCreateMsg" class="muted" style="margin-bottom:0"></p></form></div><div id="userList"></div></div></section>
 </div></div>
 <script>
+/* Diagnóstico visible de acceso; no modifica credenciales. */
+window.addEventListener('error',function(e){const el=document.getElementById('loginMsg');if(el&&document.getElementById('loginView')?.style.display!=='none')el.textContent='Error al cargar el programa: '+(e.message||'Error de JavaScript')});
+window.addEventListener('unhandledrejection',function(e){const el=document.getElementById('loginMsg');if(el&&document.getElementById('loginView')?.style.display!=='none')el.textContent='Error de conexión o carga: '+(e.reason?.message||'No se pudo completar la operación')});
+document.addEventListener('DOMContentLoaded',function(){
+ const form=document.getElementById('loginForm'),msg=document.getElementById('loginMsg');
+ if(!form||!msg)return;
+ form.addEventListener('submit',function(){msg.textContent='Comprobando acceso...';setTimeout(function(){if(msg.textContent==='Comprobando acceso...')msg.textContent='No se recibió respuesta del inicio de sesión. Comprueba la conexión o vuelve a cargar la página.'},10000)},true);
+ if(typeof window.supabase==='undefined')msg.textContent='No se pudo cargar el servicio de autenticación. Revisa la conexión y actualiza la página.';
+});
+</script>
+<script>
 const SUPABASE_URL='https://eyyggaphrzsnyrsrlrsr.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_RRFCOT12zgakkcGeGyJvfQ_LY441rvd';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
